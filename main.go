@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/lib/pq"
+	"github.com/tmcnicol/inframe/wss"
 )
 
 func main() {
@@ -28,8 +29,12 @@ func main() {
 	}
 
 	fmt.Println("Start monitoring PostgreSQL...")
+
+	s := wss.NewWSServer()
+	go s.StartWSServer()
+
 	for {
-		notificationListener(listener)
+		notificationListener(listener, s)
 	}
 }
 
@@ -68,11 +73,12 @@ func exectureQuery(query string) {
 	fmt.Println(rows.Columns())
 }
 
-func notificationListener(l *pq.Listener) {
+func notificationListener(l *pq.Listener, s *wss.WSServer) {
 	for {
 		select {
 		case n := <-l.Notify:
-			fmt.Println("Received update", n)
+			fmt.Println("Received update", n.Extra)
+			s.Broadcast <- []byte(n.Extra)
 		}
 	}
 }
