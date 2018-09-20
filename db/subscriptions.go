@@ -8,7 +8,7 @@ import (
 )
 
 type Subscription struct {
-	notification chan []byte
+	Notification chan []byte
 	listener     *pq.Listener
 	db           *DB
 }
@@ -23,7 +23,7 @@ func (db *DB) NewSubscription() (*Subscription, error) {
 	}
 
 	sub := &Subscription{
-		notification: make(chan []byte),
+		Notification: make(chan []byte),
 		listener:     listener,
 		db:           db,
 	}
@@ -66,7 +66,7 @@ func (s *Subscription) Run() {
 	for {
 		select {
 		case n := <-s.listener.Notify:
-			fmt.Println(n)
+			s.Notification <- []byte(n.Extra)
 		}
 	}
 }

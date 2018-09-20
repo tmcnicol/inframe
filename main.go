@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/tmcnicol/inframe/db"
 	"github.com/tmcnicol/inframe/server"
@@ -23,8 +22,7 @@ func main() {
 	server := server.NewServer()
 	go server.StartServer()
 
-	for {
-		// Game loop for want of a ctrl-c handler
-		time.Sleep(time.Second)
+	for n := range sub.Notification {
+		server.Broadcast <- n
 	}
 }
