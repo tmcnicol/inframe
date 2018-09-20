@@ -64,10 +64,6 @@ func (db *DB) ExecuteFromFile(filepath string) (string, error) {
 }
 
 func (db *DB) exectute(query string) (string, error) {
-	results, err := db.conn.Query(query)
-
-	fmt.Println(results.Columns())
-	fmt.Println(err)
-
+	_, err := db.conn.Query(query)
 	return "", err
 }

@@ -1,4 +1,4 @@
-package wss
+package server
 
 import (
 	"time"

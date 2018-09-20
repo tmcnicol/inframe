@@ -9,19 +9,8 @@ import (
 
 type Subscription struct {
 	notification chan []byte
-	quitc        chan struct{}
-
-	// TODO: check how these listeners work there is two ways
-	// 1. Listener only listens to topic
-	// 2. Listens to multiple topics.
-	//
-	// I assume it is 2 which means that this implementation
-	// it gives us a notification for each registered listener.
-	// In that case I need to determine wether I want fan out
-	// to the clients to be delegated to the Db or handled internally
-	// here.
-	listener *pq.Listener
-	db       *DB
+	listener     *pq.Listener
+	db           *DB
 }
 
 func (db *DB) NewSubscription() (*Subscription, error) {
@@ -74,14 +63,10 @@ func (s *Subscription) subscribeToChanges() error {
 }
 
 func (s *Subscription) Run() {
-	// go func() {
 	for {
 		select {
 		case n := <-s.listener.Notify:
 			fmt.Println(n)
-		case <-s.quitc:
-			return
 		}
 	}
-	// }()
 }

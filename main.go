@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/tmcnicol/inframe/db"
+	"github.com/tmcnicol/inframe/server"
 )
 
 func main() {
@@ -14,16 +16,15 @@ func main() {
 		fmt.Println("error creating subsctiption", err)
 	}
 
-	sub.Run()
+	fmt.Println("Subscribing to notifications")
+	go sub.Run()
 
-	// listener := pq.NewListener(connStr, 10*time.Second, time.Minute, reportProblem)
-	// err := listener.Listen("events")
-	// if err != nil {
-	// 	panic(err)
-	// }
+	fmt.Println("Starting webserver")
+	server := server.NewServer()
+	go server.StartServer()
 
-	// fmt.Println("Start monitoring PostgreSQL...")
-
-	// s := wss.NewWSServer()
-	// go s.StartWSServer()
+	for {
+		// Game loop for want of a ctrl-c handler
+		time.Sleep(time.Second)
+	}
 }

@@ -1,4 +1,4 @@
-package wss
+package server
 
 import (
 	"fmt"
@@ -8,21 +8,24 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type WSServer struct {
+// Struct to hold the web socket conenctions
+// for convienience the server is attached to this
+// as well but should probably spilt these out and compose them.
+type Server struct {
 	clients   []*client
 	Broadcast chan []byte
 	register  chan *client
 }
 
-func NewWSServer() *WSServer {
-	return &WSServer{
+func NewServer() *Server {
+	return &Server{
 		clients:   []*client{},
 		register:  make(chan *client),
 		Broadcast: make(chan []byte),
 	}
 }
 
-func (w *WSServer) run() {
+func (w *Server) startWebSocketServer() {
 	for {
 		select {
 		case client := <-w.register:
@@ -47,14 +50,14 @@ func serveHome(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
-	http.ServeFile(w, r, "wss/home.html")
+	http.ServeFile(w, r, "server/home.html")
 }
 
 var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 }
 
-func serveWebsocket(s *WSServer, w http.ResponseWriter, r *http.Request) {
+func serveWebsocket(s *Server, w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL)
 	conn, err := upgrader.Upgrade(w, r, nil)
 
@@ -69,9 +72,10 @@ func serveWebsocket(s *WSServer, w http.ResponseWriter, r *http.Request) {
 	go client.writePump()
 }
 
-func (s *WSServer) StartWSServer() {
-	go s.run()
+func (s *Server) StartServer() {
+	go s.startWebSocketServer()
 
+	fmt.Println("Serving at localhost:8080")
 	// Route requests
 	http.HandleFunc("/", serveHome)
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
